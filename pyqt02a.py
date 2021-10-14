@@ -26,6 +26,10 @@ class MyWindow(QWidget):
         self.buttonAdd.clicked.connect(self.actionAdd)
         self.layout1.addWidget(self.buttonAdd)
 
+        self.buttonSubtract = QPushButton('Subtract')
+        self.buttonSubtract.clicked.connect(self.actionSubtract)
+        self.layout1.addWidget(self.buttonSubtract)
+
         self.layout4 = QHBoxLayout()
         self.label3 = QLabel('x+y = ')
         self.labelResult = QLabel()
@@ -38,6 +42,12 @@ class MyWindow(QWidget):
         x = int(self.lineEditX.text())
         y = int(self.lineEditY.text())
         z = x+y
+        self.labelResult.setText(str(z))
+
+    def actionSubtract(self):
+        x = int(self.lineEditX.text())
+        y = int(self.lineEditY.text())
+        z = x - y
         self.labelResult.setText(str(z))
     
 app = QApplication([])
