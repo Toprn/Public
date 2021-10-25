@@ -80,21 +80,21 @@ class Ui_MainWindow(object):
         self.twobutton.setFont(font)
         self.twobutton.setIconSize(QtCore.QSize(16, 16))
         self.twobutton.setObjectName("twobutton")
-        self.dividebutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.press("/"))
+        self.dividebutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.operate("/"))
         self.dividebutton.setGeometry(QtCore.QRect(300, 170, 51, 51))
         font = QtGui.QFont()
         font.setPointSize(22)
         self.dividebutton.setFont(font)
         self.dividebutton.setIconSize(QtCore.QSize(16, 16))
         self.dividebutton.setObjectName("dividebutton")
-        self.multibutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.press("*"))
+        self.multibutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.operate("*"))
         self.multibutton.setGeometry(QtCore.QRect(300, 250, 51, 51))
         font = QtGui.QFont()
         font.setPointSize(22)
         self.multibutton.setFont(font)
         self.multibutton.setIconSize(QtCore.QSize(16, 16))
         self.multibutton.setObjectName("multibutton")
-        self.minusbutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.press("-"))
+        self.minusbutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.operate("-"))
         self.minusbutton.setGeometry(QtCore.QRect(300, 330, 51, 51))
         font = QtGui.QFont()
         font.setPointSize(22)
@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
         self.dotbutton.setFont(font)
         self.dotbutton.setIconSize(QtCore.QSize(16, 16))
         self.dotbutton.setObjectName("dotbutton")
-        self.plusbutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.press("+"))
+        self.plusbutton = QtWidgets.QPushButton(self.centralwidget, clicked= lambda: self.operate("+"))
         self.plusbutton.setGeometry(QtCore.QRect(300, 410, 51, 51))
         font = QtGui.QFont()
         font.setPointSize(22)
@@ -152,6 +152,17 @@ class Ui_MainWindow(object):
         self.textbox.setFrameShadow(QtWidgets.QFrame.Plain)
         self.textbox.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
         self.textbox.setObjectName("textbox")
+        font = QtGui.QFont()
+        font.setPointSize(25)
+        font.setBold(True)
+        font.setWeight(75)
+        self.operationlabel = QtWidgets.QLabel(self.centralwidget)
+        self.operationlabel.setEnabled(True)
+        self.operationlabel.setGeometry(QtCore.QRect(30, 20, 30, 30))
+        self.operationlabel.setFont(font)
+        self.operationlabel.setText("")
+        self.operationlabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.operationlabel.setObjectName("operationlabel")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 381, 21))
@@ -165,67 +176,86 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
     
 ##Calculator Processing##
-    global backresult
+    global backresult,operation,dotstatus
     backresult = ""
+    operation = ["+","-","*","/"]
+    dotstatus = "+"
     def result(self):
-        global backresult
-        try:
-            if backresult != "":
+        global backresult,operation,dotstatus
+        if backresult[-1] in operation:
+            backresult = backresult[:-1]
+        elif backresult != "":
+            if backresult[-1]!="0" and backresult[-2]!="/":
                 backresult = str(round(eval(backresult),9))
                 self.textbox.setText(backresult)
             else:
-                self.textbox.setText("0")
-        except:
-            self.textbox.setText("Error")
+                self.textbox.setText("Undefined")
+        else:
+            self.textbox.setText("0")
+        self.operationlabel.setText("")
+        dotstatus = "-"
     def dot(self):
-        global backresult
-        if self.textbox.text()[-1] != ".":
+        global backresult,operation,dotstatus
+        if dotstatus == "+":
+            if backresult[-1] in operation:
+                self.textbox.setText("0")
+                backresult += "0"
             self.textbox.setText(f"{self.textbox.text()}.")
             backresult += "."
-    def press(self, btinput):
+            dotstatus = "-"
+    def operate(self,x):
+        global backresult,operation,dotstatus
+        if x=="/":
+            self.operationlabel.setText("÷")
+        elif x=="*":
+            self.operationlabel.setText("×")
+        elif x=="-":
+            self.operationlabel.setText("−")
+        else:
+            self.operationlabel.setText("+")
+        if backresult[-1] in operation:
+            backresult = backresult[:-1]
+        if "+" in backresult or "-" in backresult or "*" in backresult or "/" in backresult:
+            if backresult[-1] not in operation:
+                backresult=str(round(eval(backresult),9))
+                self.textbox.setText(backresult)
+        backresult += x
+        dotstatus = "+"
+    def press(self,x):
         global backresult
-        if btinput == "C":
+        if x == "C":
             self.textbox.setText("0")
+            self.operationlabel.setText("")
             backresult = ""
-        elif btinput == "CE":
+        elif x == "CE":
             if "+" in backresult or "-" in backresult or "*" in backresult or "/" in backresult:
                 test = backresult[::-1]
                 for check in test:
-                    if check=="+" or check=="-" or check=="*" or check=="/":
+                    if check in operation:
                         backresult = test[::-1]
                         self.textbox.setText("0")
                         break
                     test = test[1:]
             else:
                 self.textbox.setText("0")
-                backresult = ""
+                self.operationlabel.setText("")
+                backresult=""
         elif backresult != "":
-            if btinput=="+" or btinput=="-" or btinput=="*" or btinput=="/":
-                if btinput=="*":
-                    self.textbox.setText("×")
-                elif btinput=="/":
-                    self.textbox.setText("÷")
-                elif btinput=="-":
-                    self.textbox.setText("−")
-                else:
-                    self.textbox.setText(btinput)
-                if backresult[-1]=="+" or backresult[-1]=="-" or backresult[-1]=="*" or backresult[-1]=="/":
-                    backresult = backresult[:-1]
-                backresult += btinput
-            elif backresult[-1]=="+" or backresult[-1]=="-" or backresult[-1]=="*" or backresult[-1]=="/":
-                if btinput != "0":
-                    self.textbox.setText(btinput)
-                    backresult += btinput
+            if backresult[-1] in operation:
+                self.textbox.setText(x)
+                backresult += x
             else:
                 if self.textbox.text() == "0":
                     self.textbox.setText("")
-                self.textbox.setText(f"{self.textbox.text()}{btinput}")
-                backresult += btinput
-        else:
-            if btinput != "0":
+                if backresult[-1]=="0" and backresult[-2] in operation:
+                    backresult = backresult[:-1]
+                self.textbox.setText(f"{self.textbox.text()}{x}")
+                backresult += x
+        elif backresult == "":
+            if x != "0":
                 self.textbox.setText("")
-                self.textbox.setText(btinput)
-                backresult += btinput
+                self.textbox.setText(x)
+                backresult += x
 ##Calculator Processing##
 
     def retranslateUi(self, MainWindow):
